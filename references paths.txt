@@ -1,0 +1,8 @@
+Grasshopper
+C:\Program Files\Rhino 7\Plug-ins\Grasshopper\Grasshopper.dll
+
+RhinoCommon
+C:\Program Files\Rhino 7\System\RhinoCommon.dll
+
+GH_IO
+C:\Program Files\Rhino 7\Plug-ins\Grasshopper\GH_IO.dll
