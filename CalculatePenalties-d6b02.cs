@@ -129,7 +129,7 @@ public abstract class Script_Instance_d6b02 : GH_ScriptInstance
     var interCurves = new Curve[] { };
     var interPoints = new Point3d[] { };
 
-    // checking intersections of rectangle surface with external region
+    // checking intersection between two surfaces
     bool doesIntersect =
       Intersection
       .SurfaceSurface(
