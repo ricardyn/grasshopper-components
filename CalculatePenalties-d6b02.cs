@@ -58,7 +58,12 @@ public abstract class Script_Instance_d6b02 : GH_ScriptInstance
   {
     bool externalRegionIntersect =
       roomRectangles
-      .Any(rec => DoesIntersect(GetRectangleSurface(rec), externalRegion));
+      .Any(rec =>
+        DoesIntersectUsingMesh(
+          GetRectangleMesh(rec),
+          GetSurfaceMesh(externalRegion)
+        )
+      );
 
     if (externalRegionIntersect)
     {
@@ -93,7 +98,7 @@ public abstract class Script_Instance_d6b02 : GH_ScriptInstance
     return
       others
       .Any(other =>
-        DoesIntersect(GetRectangleSurface(other), GetRectangleSurface(rectangle))
+        DoesIntersectUsingMesh(GetRectangleMesh(other), GetRectangleMesh(rectangle))
       );
   }
 
@@ -113,6 +118,35 @@ public abstract class Script_Instance_d6b02 : GH_ScriptInstance
       .FirstOrDefault();
 
     return recSurface;
+  }
+
+  private Mesh GetRectangleMesh(Rectangle3d rectangle)
+  {
+    // Get rectangle segments as NURBS curves
+    IEnumerable<NurbsCurve> segments =
+      rectangle
+      .ToPolyline()
+      .GetSegments()
+      .Select(s => s.ToNurbsCurve());
+
+    var recSurface = Brep.CreatePatch(segments, null, 0.001);
+
+    var mp = new MeshingParameters();
+
+    return Mesh.CreateFromBrep(recSurface, mp).FirstOrDefault();
+  }
+
+  private Mesh GetSurfaceMesh(Surface surface)
+  {
+    var mp = new MeshingParameters();
+    return Mesh.CreateFromSurface(surface, mp);
+  }
+
+  private bool DoesIntersectUsingMesh(Mesh meshA, Mesh meshB)
+  {
+    var clashes = MeshClash.Search(meshA, meshB, 0, 1);
+
+    return clashes.Select(c => c.ClashPoint).Any();
   }
 
   private bool DoesIntersect(Surface srfA, Surface srfB)
