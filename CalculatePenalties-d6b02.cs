@@ -108,7 +108,7 @@ public abstract class Script_Instance_d6b02 : GH_ScriptInstance
 
     var recSurface =
       Brep
-      .CreatePatch(segments, null, 0.001)
+      .CreatePatch(segments, null, 0.00001)
       .Surfaces
       .FirstOrDefault();
 
