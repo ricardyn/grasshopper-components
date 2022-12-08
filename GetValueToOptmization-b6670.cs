@@ -10,14 +10,12 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 
-using System.Linq;
-using Rhino.Geometry.Intersect;
 
 
 /// <summary>
 /// This class will be instantiated on demand by the Script component.
 /// </summary>
-public abstract class Script_Instance_d6b02 : GH_ScriptInstance
+public abstract class Script_Instance_b6670 : GH_ScriptInstance
 {
   #region Utility functions
   /// <summary>Print a String to the [Out] Parameter of the Script component.</summary>
@@ -54,85 +52,24 @@ public abstract class Script_Instance_d6b02 : GH_ScriptInstance
   /// they will have a default value.
   /// </summary>
   #region Runscript
-  private void RunScript(Surface externalRegion, List<Rectangle3d> roomRectangles, ref object penalty)
+  private void RunScript(double value, bool penalty, bool maximize, double overloadValue, ref object calculatedValue)
   {
-    bool externalRegionIntersect =
-      roomRectangles
-      .Any(rec => DoesIntersect(GetRectangleSurface(rec), externalRegion));
-
-    if (externalRegionIntersect)
+    if (penalty)
     {
-      penalty = true;
-      Print("Some rectangle intersect external region");
+      calculatedValue = overloadValue;
       return;
     }
 
-    bool intersectWithOther =
-      roomRectangles
-      .Any(rec =>
-        IntersectWithOthers(
-          rec,
-          roomRectangles.Except(new List<Rectangle3d>() { rec })
-        )
-      );
-
-    if (intersectWithOther)
+    if (maximize)
     {
-      penalty = true;
-      Print("Some rectangle intersect other");
+      calculatedValue = value * -1;
       return;
     }
 
-    Print("There is no penalty");
-    penalty = false;
+    calculatedValue = value;
   }
   #endregion
   #region Additional
-  private bool IntersectWithOthers(Rectangle3d rectangle, IEnumerable<Rectangle3d> others)
-  {
-    return
-      others
-      .Any(other =>
-        DoesIntersect(GetRectangleSurface(other), GetRectangleSurface(rectangle))
-      );
-  }
 
-  private Surface GetRectangleSurface(Rectangle3d rectangle)
-  {
-    // Get rectangle segments as NURBS curves
-    IEnumerable<NurbsCurve> segments =
-      rectangle
-      .ToPolyline()
-      .GetSegments()
-      .Select(s => s.ToNurbsCurve());
-
-    var recSurface =
-      Brep
-      .CreatePatch(segments, null, 0.001)
-      .Surfaces
-      .FirstOrDefault();
-
-    return recSurface;
-  }
-
-  private bool DoesIntersect(Surface srfA, Surface srfB)
-  {
-    // out parameters to Intersection.SurfaceSurface() method
-    var interCurves = new Curve[] { };
-    var interPoints = new Point3d[] { };
-
-    // checking intersections of rectangle surface with external region
-    bool doesIntersect =
-      Intersection
-      .SurfaceSurface(
-        srfA,
-        srfB,
-        0,
-        out interCurves,
-        out interPoints
-      );
-
-    return doesIntersect;
-  }
   #endregion
 }
